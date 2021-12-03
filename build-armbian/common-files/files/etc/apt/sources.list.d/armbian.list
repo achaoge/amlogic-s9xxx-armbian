@@ -1,1 +1,1 @@
-deb http://mirrors.aliyun.com/armbian/ buster main buster-utils buster-desktop
+deb http://mirrors.aliyun.com/armbian/ bullseye main bullseye-utils bullseye-desktop

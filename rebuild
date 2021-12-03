@@ -113,7 +113,7 @@ make_image() {
     fi
 
     # Make Amlogic s9xxx armbian
-    build_image_file="${tmp_outpath}/Armbian_${armbian_original_release}_Aml_${build_soc}_buster_${make_version}_$(date +"%Y.%m.%d.%H%M").img"
+    build_image_file="${tmp_outpath}/Armbian_${armbian_original_release}_Aml_${build_soc}_bullseye_${make_version}_$(date +"%Y.%m.%d.%H%M").img"
     rm -f ${build_image_file}
     sync
 
