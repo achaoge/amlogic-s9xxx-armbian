@@ -122,6 +122,15 @@ Command: Enter [ vi /etc/fstab ]
 
 ## Detailed build compile command
 
+| Parameter | Meaning | Description |
+| ---- | ---- | ---- |
+| -d | Defaults | Compile all cores and all firmware types. |
+| -b | Build | Specify the Build firmware type. Write the build firmware name individually, such as `-b s905x3` . Multiple firmware use `_` connect such as `-b s905x3_s905d` . You can use these codes: `s905x3`, `s905x2`, `s905x`, `s905w`, `s905d`, `s922x`, `s922x-n2`, `s912`, `s912-t95z` . Note: `s922x-n2` is `s922x-odroid-n2`, `s912-t95z` is `s912-t95z-plus`. |
+| -v | Version | Specify the name of the kernel [version branch](https://github.com/ophub/kernel/tree/main/pub), Such as `-v stable`. The specified name must be the same as the branch directory name. The `stable` branch version is used by default. |
+| -k | Kernel | Specify the [kernel](https://github.com/ophub/kernel/tree/main/pub/stable) name. Write the kernel name individually such as `-k 5.4.160` . Multiple kernel use `_` connection such as `-k 5.10.80_5.4.160` |
+| -a | AutoKernel | Set whether to automatically adopt the latest version of the kernel of the same series. When it is `true`, it will automatically find in the kernel library whether there is an updated version of the kernel specified in `-k` such as 5.4.160 version. If there is the latest version of 5.4 same series, it will automatically Replace with the latest version. When set to `false`, the specified version of the kernel will be compiled. Default value: `true` |
+| -s | Size | Specify the size of the root partition in MB. The default is 1024, and the specified size must be greater than 256. Such as `-s 1024` |
+
 - `sudo ./rebuild -d -b s905x3 -k 5.4.160`: recommend. Use the default configuration, specify a kernel and a firmware for compilation.
 - `sudo ./rebuild -d -b s905x3_s905d -k 5.10.80_5.4.160`: Use the default configuration, specify multiple cores, and multiple firmware for compilation. use `_` to connect.
 - `sudo ./rebuild -d`: Use the default configuration to pack all boxes.
@@ -132,42 +141,37 @@ Command: Enter [ vi /etc/fstab ]
 - `sudo ./rebuild -d -k 5.10.80_5.4.160 -a true`: Use the default configuration. Specify multiple cores, use `_` to connect. Auto update to the latest kernel of the same series.
 - `sudo ./rebuild -d -s 1024 -k 5.4.160`: Use the default configuration and set the partition size to 1024m, and only compile the armbian firmware with the kernel version 5.4.160.
 
-| Parameter | Meaning | Description |
-| ---- | ---- | ---- |
-| -d | Defaults | Compile all cores and all firmware types. |
-| -b | Build | Specify the Build firmware type. Write the build firmware name individually, such as `-b s905x3` . Multiple firmware use `_` connect such as `-b s905x3_s905d` . You can use these codes: `s905x3`, `s905x2`, `s905x`, `s905w`, `s905d`, `s922x`, `s922x-n2`, `s912`, `s912-t95z` . Note: `s922x-n2` is `s922x-odroid-n2`, `s912-t95z` is `s912-t95z-plus`. |
-| -v | Version | Specify the name of the kernel [version branch](https://github.com/ophub/kernel/tree/main/pub), Such as `-v stable`. The specified name must be the same as the branch directory name. The `stable` branch version is used by default. |
-| -k | Kernel | Specify the [kernel](https://github.com/ophub/kernel/tree/main/pub/stable) name. Write the kernel name individually such as `-k 5.4.160` . Multiple kernel use `_` connection such as `-k 5.10.80_5.4.160` |
-| -a | AutoKernel | Set whether to automatically adopt the latest version of the kernel of the same series. When it is `true`, it will automatically find in the kernel library whether there is an updated version of the kernel specified in `-k` such as 5.4.160 version. If there is the latest version of 5.4 same series, it will automatically Replace with the latest version. When set to `false`, the specified version of the kernel will be compiled. Default value: `true` |
-| -s | Size | Specify the size of the root partition in MB. The default is 1024, and the specified size must be greater than 256. Such as `-s 1024` |
-
 💡Tips: The ***`s905x`*** and ***`s905w`*** boxs currently only support `5.4.*` kernels, Cannot use kernel version 5.10 and above. Please add kernel substitution variables when compiling these two models of devices. Other devices can be freely selected.
 
 - ### Local build instructions
-
 1. Install the necessary packages (E.g Ubuntu 20.04 LTS user)
+
 ```yaml
-sudo apt-get update -y
-sudo apt-get full-upgrade -y
-sudo apt-get install -y $(curl -fsSL git.io/ubuntu-2004-server)
+- name: Rebuild Armbian for Amlogic s9xxx
+  uses: ophub/amlogic-s9xxx-armbian@main
+  with:
+    armbian_path: build/output/images/*.img
+    armbian_soc: s905d_s905x3_s922x_s905x
+    armbian_kernel: 5.10.80_5.4.160
 ```
+
 2. Clone the repository to the local. `git clone --depth 1 https://github.com/ophub/amlogic-s9xxx-armbian.git`
 
-3. Create the `build/output/images` folder, and upload the Armbian image ( Eg: `Armbian_21.11.0-trunk_Lepotato_buster_current_5.10.80.img` ) to this `~/amlogic-s9xxx-armbian/build/output/images` directory. Please keep the release version number (e.g. `21.11.0`) and kernel version number (e.g. `5.10.80`) in the name of the original Armbian image file, and will be used as substitution parameters when naming the output firmware during reconstruction.
+3. Create the `build/output/images` folder, and upload the Armbian image ( Eg: `Armbian_21.11.0-trunk_Lepotato_buster_current_5.10.80.img` ) to this `~/amlogic-s9xxx-armbian/build/output/images` directory. Please keep the release version number (e.g. `21.11.0`) and kernel version number (e.g. `5.10.80`) in the name of the original Armbian image file, It will be used as the name of the armbian firmware after rebuilding.
 
 4. Enter the `~/amlogic-s9xxx-armbian` root directory. And run Eg: `sudo ./rebuild -d -b s905x3 -k 5.4.160` to build armbian for `amlogic s9xxx`. The generated Armbian image is in the `build/output/images` directory under the root directory.
 
 - ### Use GitHub Action to build
 
-1. Workflows configuration in [.yml](.github/workflows) files. Set the armbian `SOC` you want to build in `Rebuild Armbian for amlogic s9xxx`.
+1. Workflows configuration in [.yml](.github/workflows/build-armbian.yml) files. Set the armbian `SOC` you want to build in `Rebuild Armbian for amlogic s9xxx`.
 
-2. New compilation: Select ***`Build the armbian firmware`*** on the [Action](https://github.com/ophub/amlogic-s9xxx-armbian/actions) page. Click the ***`Run workflow`*** button.
+2. New compilation: Select ***`Build armbian`*** on the [Action](https://github.com/ophub/amlogic-s9xxx-armbian/actions) page, According to the OS version officially supported by Armbian, In [RELEASE](https://docs.armbian.com/Developer-Guide_Build-Options/), you can choose Ubuntu series: `bionic` / `focal` / `hirsute`, or Debian series: `bullseye` / `buster` / `stretch`, and in BOARD, you can choose `lepotato` / `odroidn2`, etc., Click the ***`Run workflow`*** button.
 
 3. Compile again: If there is an `Armbian_.*-trunk_.*.img.gz` file in [Releases](https://github.com/ophub/amlogic-s9xxx-armbian/releases), you do not need to compile it completely, you can directly use this file to `build armbian` of different soc. Select ***`Use Releases file to build armbian`*** on the [Action](https://github.com/ophub/amlogic-s9xxx-armbian/actions) page. Click the ***`Run workflow`*** button.
 
 - ### Only import GitHub Action for Armbian rebuild
 
-You can use other methods to build the Armbian system, or use the general version of the firmware officially provided by Armbian, and only import the Action from this repository in the process control file .github/workflows/.yml to rebuild Armbian to adapt to the use of Amlogic S9xxx series boxes, code show as below:
+You can use other methods to build the Armbian system. Or use [Armbian](https://armbian.tnahosting.net/dl/) officially provided [lepotato](https://armbian.tnahosting.net/dl/lepotato/archive/) and other branch firmware. and only import the Action from this repository in the process control file [.yml](.github/workflows/rebuild-armbian.yml) to rebuild Armbian to adapt to the use of Amlogic S9xxx series boxes. In the [Action](https://github.com/ophub/amlogic-s9xxx-armbian/actions) page, select ***`Rebuild armbian`***, and enter the Armbian network download url such as `https://dl.armbian.com/*/Armbian_*_buster_*.img.xz`, or in the process control file [.yml](.github/workflows/rebuild-armbian.yml), set the load path of the rebuild file through the `armbian_path` parameter. code show as below:
 
 ```yaml
 - name: Rebuild Armbian for Amlogic s9xxx
@@ -182,12 +186,12 @@ You can use other methods to build the Armbian system, or use the general versio
 
 | parameter              | Defaults               | Description                                                   |
 |------------------------|------------------------|---------------------------------------------------------------|
-| armbian_path         | no                     | Set the path of the original Armbian file, support the file path in the current workflow such as `build/output/images/*.img`, and also support the use of the network download address such as: `https://github.com/*/releases/ */*/Armbian_21.11.0-*_buster_*_5.10.83.img.gz` |
+| armbian_path         | no                     | Set the path of the original Armbian file, support the file path in the current workflow such as `build/output/images/*.img`, and also support the use of the network download address such as: `https://dl.armbian.com/*/Armbian_*_buster_*.img.xz` |
 | armbian_soc        | s905d_s905x3           | Set the `SoC` of the packaging box, you can specify a single box such as `s905x3`, you can choose multiple boxes to use `_` connection such as `s905x3_s905d` . SOC code of each box is: `s905x3`, `s905x2`, `s905x`, `s905w`, `s905d`, `s922x`, `s922x-n2`, `s912`. Note: `s922x-n2` is `s922x-odroid-n2` |
 | version_branch         | stable                 | Specify the name of the kernel [version branch](https://github.com/ophub/kernel/tree/main/pub), Such as `stable`. The specified name must be the same as the branch directory name. The `stable` branch version is used by default. |
 | armbian_kernel         | 5.10.80_5.4.160        | Set the kernel version，The [kernel](https://github.com/ophub/kernel/tree/main/pub/stable) library contains many original kernels of `Flippy`, you can view and choose to specify. |
 | auto_kernel            | true                   | Set whether to automatically adopt the latest version of the kernel of the same series. When it is `true`, it will automatically find in the kernel library whether there is an updated version of the kernel specified in `amlogic_kernel`. such as 5.4.160 version. If there is the latest version of 5.4 same series, it will automatically Replace with the latest version. When set to `false`, the specified version of the kernel will be compiled. Default value: `true` |
-| armbian_size           | 2748                   | Set the size of the firmware ROOTFS partition |
+| armbian_size           | 2748                   | Set the size of the firmware ROOTFS partition. |
 
 - GitHub Action Output variable description
 
