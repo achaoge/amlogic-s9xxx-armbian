@@ -31,6 +31,9 @@ use_linuxgun_url="https://developer.arm.com/-/media/Files/downloads/gnu-a/10.3-2
 use_linuxgun_file="gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz"
 use_linuxgun_localpath="/usr/local/aarch64"
 
+# QEMU BINARY for x86_64
+use_qemu_binary="qemu-x86_64-static"
+
 # Armbian system
 armbian_repo="ophub/amlogic-s9xxx-armbian"
 armbian_releases_file="Armbian_Aml_.*/Armbian_.*_s905d_.*.img.gz"
@@ -291,9 +294,17 @@ chroot_armbian_for_x64() {
     cp -rf /lib/modules/${kernel_version}${LOCALVERSION} ${tag_rootfs}/lib/modules && sync
     #echo -e "${INFO} Kernel copy results in the [ ${tag_rootfs}/lib/modules ] directory: \n$(ls -l ${tag_rootfs}/lib/modules) \n"
 
-    cp ${script_dir}/generate_uinitrd.sh ${tag_rootfs}/root 2>/dev/null && sync
+    cp -f ${script_dir}/generate_uinitrd.sh ${tag_rootfs}/root 2>/dev/null && sync
     chmod +x ${tag_rootfs}/root/generate_uinitrd.sh 2>/dev/null
     #echo -e "${INFO} Kernel copy results in the [ ${tag_rootfs}/root ] directory: \n$(ls -l ${tag_rootfs}/root) \n"
+
+    if [ -f "/usr/bin/${use_qemu_binary}" ]; then
+        cp -f /usr/bin/${use_qemu_binary} ${tag_rootfs}/usr/bin/ 2>/dev/null && sync
+        chmod +x ${tag_rootfs}/usr/bin/${use_qemu_binary} 2>/dev/null
+        #echo -e "${INFO} The [ ${use_qemu_binary} ] file copy results: \n$(ls -l ${tag_rootfs}/usr/bin/${use_qemu_binary}) \n"
+    else
+        echo -e "${WARNING} The [ /usr/bin/${use_qemu_binary} ] file is invalid."
+    fi
 
     # Enter the armbian system to generate /boot/uInitrd file
     chroot ${tag_rootfs} <<EOF
