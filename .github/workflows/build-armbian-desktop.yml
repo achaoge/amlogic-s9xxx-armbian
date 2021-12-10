@@ -17,8 +17,8 @@ on:
         description: "BOARD: lepotato / odroidn2"
         required: false
         default: "lepotato"
-  schedule:
-    - cron: "0 17 * * 0"
+        #  schedule:
+        #- cron: "0 17 * * 0"
 
 env:
   UPLOAD_FIRMWARE: false
@@ -73,7 +73,9 @@ jobs:
           cd build/
           sudo chmod +x compile.sh
           sudo ./compile.sh BOARD=${{ env.ARMBIAN_BOARD }} HOST=armbian BRANCH=current RELEASE=${{ env.ARMBIAN_RELEASE }} BUILD_MINIMAL=no \
-                            BUILD_DESKTOP=yes KERNEL_ONLY=no KERNEL_CONFIGURE=no COMPRESS_OUTPUTIMAGE=sha,img
+                            BUILD_DESKTOP=yes KERNEL_ONLY=no KERNEL_CONFIGURE=no COMPRESS_OUTPUTIMAGE=sha,img \
+                            DESKTOP_ENVIRONMENT="xfce" DESKTOP_ENVIRONMENT_CONFIG_NAME="config_full" DESKTOP_APPGROUPS_SELECTED="browsers editors"
+
           echo "::set-output name=status::success"
 
       - name: Rebuild Armbian for amlogic s9xxx
