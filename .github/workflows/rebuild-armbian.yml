@@ -219,12 +219,19 @@ on:
       builder_name:
         description: "Set Armbian builder signature."
         required: false
-        default: "ophub"
+        default: "achao"
         type: choice
         options:
           - ophub
-          - angel
-          - yourname
+          - achao
+      armbian_size:
+        description: "Set armbian rootfs size(Unit: MiB)."
+        required: false
+        default: "2560"
+        type: choice
+        options:
+          - 2560
+          - 6072
 
 env:
   TZ: America/New_York
@@ -299,7 +306,7 @@ jobs:
 
           # Get the release name of the rebuild armbian file
           set_release=""
-          ARR_RELEASE=("jammy" "focal" "bullseye" "buster" "sid")
+          ARR_RELEASE=("jammy" "focal" "nobel" "bullseye" "buster" "bookworm" "sid")
           i=1
           for r in ${ARR_RELEASE[*]}; do
               if [[ "${armbian_url}" == *"${r}"* ]]; then
@@ -330,6 +337,7 @@ jobs:
           kernel_usage: ${{ inputs.kernel_usage }}
           armbian_fstype: ${{ inputs.armbian_fstype }}
           builder_name: ${{ inputs.builder_name }}
+          armbian_size: ${{ inputs.armbian_size }}
 
       - name: Upload Armbian image to Release
         uses: ncipollo/release-action@main
